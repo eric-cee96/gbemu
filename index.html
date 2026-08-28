@@ -1,12 +1,62 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GB Emu</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+      body { max-width: 720px; margin: 3rem auto; padding: 0 1rem; background: #111318; color: #edf0f7; }
+      .panel { padding: 1.5rem; border: 1px solid #353b49; border-radius: 12px; background: #1a1e27; }
+      label { display: block; margin-bottom: .5rem; font-weight: 700; }
+      input { width: 100%; box-sizing: border-box; padding: .75rem; border: 1px solid #4b5364; border-radius: 8px; }
+      .controls { display: flex; gap: .75rem; margin-top: 1rem; }
+      button { padding: .65rem 1rem; border: 0; border-radius: 8px; background: #536dfe; color: white; font-weight: 700; cursor: pointer; }
+      button:disabled { opacity: .45; cursor: default; }
+      .speed { margin-top: 1rem; }
+      .speed input { padding: 0; }
+      .game-controls { display: grid; grid-template-columns: repeat(4, minmax(3rem, 1fr)); gap: .5rem; margin-top: 1rem; }
+      .game-controls button { background: #343b4b; touch-action: none; user-select: none; }
+      .game-controls button.pressed { background: #7c8cff; transform: translateY(1px); }
+      #rom-status { min-height: 1.5rem; margin-bottom: 0; color: #b8c0d4; }
+      #rom-status.error { color: #ff8d8d; }
+      canvas { display: block; width: 480px; max-width: 100%; aspect-ratio: 10 / 9; margin-top: 1.5rem; background: #080a0d; image-rendering: pixelated; }
+    </style>
   </head>
   <body>
-    <canvas id='gbemucanv'></canvas>
-    <script src='main.js'></script>
-    <script src='decoder.js'></script>
-    <script src='decodertest.js'></script>
+    <h1>Game Boy Emulator</h1>
+    <section class="panel" aria-labelledby="rom-label">
+      <label id="rom-label" for="rom-file">Choose a Game Boy ROM</label>
+      <input id="rom-file" type="file" accept=".gb,.gbc,application/octet-stream">
+      <div class="controls">
+        <button id="run-button" type="button" disabled>Run</button>
+        <button id="reset-button" type="button" disabled>Reset</button>
+        <button id="sound-button" type="button">Enable sound</button>
+      </div>
+      <div class="speed">
+        <label for="sound-volume">Sound volume: <output id="sound-volume-value">50%</output></label>
+        <input id="sound-volume" type="range" min="0" max="1" step="0.05" value="0.5">
+      </div>
+      <div class="speed">
+        <label for="clock-speed">Clock speed: <output id="clock-speed-value">1.00×</output></label>
+        <input id="clock-speed" type="range" min="0.25" max="4" step="0.25" value="1">
+      </div>
+      <div class="game-controls" aria-label="Game Boy controls">
+        <button type="button" data-button="left">←</button>
+        <button type="button" data-button="up">↑</button>
+        <button type="button" data-button="down">↓</button>
+        <button type="button" data-button="right">→</button>
+        <button type="button" data-button="select">Select</button>
+        <button type="button" data-button="start">Start</button>
+        <button type="button" data-button="b">B</button>
+        <button type="button" data-button="a">A</button>
+      </div>
+      <p><small>Keyboard: arrows, Z = B, X = A, Shift = Select, Enter = Start.</small></p>
+      <p id="rom-status" role="status" aria-live="polite">No ROM loaded.</p>
+    </section>
+    <canvas id="gbemucanv" width="160" height="144" aria-label="Game Boy display"></canvas>
+
+    <script src="LR35902.js"></script>
+    <script src="main.js"></script>
   </body>
 </html>
