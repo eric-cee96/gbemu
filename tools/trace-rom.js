@@ -12,7 +12,9 @@ const context = vm.createContext({
   document: { readyState: 'loading', addEventListener() {}, getElementById() { return null; } },
 });
 vm.runInContext(fs.readFileSync(path.join(root, 'LR35902.js'), 'utf8'), context);
-vm.runInContext(fs.readFileSync(path.join(root, 'main.js'), 'utf8'), context);
+for (const file of ['GBmemorymapper.js', 'GBhardware.js', 'GBprocessor.js', 'main.js']) {
+  vm.runInContext(fs.readFileSync(path.join(root, file), 'utf8'), context, { filename: file });
+}
 const ids = vm.runInContext('({ PC, SP, AF, BC, DE, HL })', context);
 const rom = new Uint8Array(fs.readFileSync(romPath));
 const info = context.loadRomBytes(rom);

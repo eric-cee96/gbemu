@@ -5,7 +5,9 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const cpuSource = fs.readFileSync(path.join(__dirname, '..', 'LR35902.js'), 'utf8');
-const mainSource = fs.readFileSync(path.join(__dirname, '..', 'main.js'), 'utf8');
+const mainSource = ['GBmemorymapper.js', 'GBhardware.js', 'GBprocessor.js', 'main.js']
+  .map(file => fs.readFileSync(path.join(__dirname, '..', file), 'utf8'))
+  .join('\n');
 
 function cpu() {
   const context = vm.createContext({ console: { log() {} }, Uint8Array });
@@ -316,6 +318,7 @@ test('MBC3 supports seven-bit ROM banks and banked cartridge RAM', () => {
   vm.runInContext(mainSource, c, { filename: 'main.js' });
   const rom = new Uint8Array(0x100000);
   rom[0x147] = 0x13;
+  rom[0x149] = 0x03;
   rom[0x21 * 0x4000] = 0x67;
   c.loadRomBytes(rom);
   c.writeMem(0x2000, 0x21);
@@ -327,6 +330,65 @@ test('MBC3 supports seven-bit ROM banks and banked cartridge RAM', () => {
   assert.equal(c.readMem(0xa000), 0x00);
   c.writeMem(0x4000, 0x02);
   assert.equal(c.readMem(0xa000), 0x91);
+});
+
+test('MBC5 supports nine-bit ROM selection and four-bit RAM banks', () => {
+  const c = cpu();
+  c.document = {
+    readyState: 'loading', addEventListener() {}, getElementById() { return null; },
+  };
+  vm.runInContext(mainSource, c, { filename: 'main.js' });
+  const rom = new Uint8Array(0x100000);
+  rom[0x147] = 0x1b;
+  rom[0x149] = 0x04;
+  rom[0x21 * 0x4000] = 0x5c;
+  c.loadRomBytes(rom);
+  c.writeMem(0x2000, 0x21);
+  assert.equal(c.readMem(0x4000), 0x5c);
+  c.writeMem(0x3000, 1);
+  assert.equal(c.activeRomBank, 0x121);
+  c.writeMem(0x0000, 0x0a);
+  c.writeMem(0x4000, 0x07);
+  c.writeMem(0xa123, 0xd4);
+  c.writeMem(0x4000, 0x02);
+  assert.equal(c.readMem(0xa123), 0);
+  c.writeMem(0x4000, 0x07);
+  assert.equal(c.readMem(0xa123), 0xd4);
+});
+
+test('MBC2 uses address bit 8 for control and stores 512 four-bit values', () => {
+  const c = cpu();
+  c.document = {
+    readyState: 'loading', addEventListener() {}, getElementById() { return null; },
+  };
+  vm.runInContext(mainSource, c, { filename: 'main.js' });
+  const rom = new Uint8Array(0x40000);
+  rom[0x147] = 0x06;
+  rom[3 * 0x4000] = 0x73;
+  c.loadRomBytes(rom);
+  c.writeMem(0x2100, 3);
+  assert.equal(c.readMem(0x4000), 0x73);
+  c.writeMem(0x0000, 0x0a);
+  c.writeMem(0xa123, 0xbc);
+  assert.equal(c.readMem(0xa123), 0xfc);
+  assert.equal(c.readMem(0xa323), 0xfc);
+});
+
+test('all standard cartridge header types are recognized', () => {
+  const c = cpu();
+  c.document = {
+    readyState: 'loading', addEventListener() {}, getElementById() { return null; },
+  };
+  vm.runInContext(mainSource, c, { filename: 'main.js' });
+  const types = [0x00, 0x01, 0x02, 0x03, 0x05, 0x06, 0x08, 0x09,
+    0x0b, 0x0c, 0x0d, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x19, 0x1a,
+    0x1b, 0x1c, 0x1d, 0x1e, 0x20, 0x22, 0xfc, 0xfd, 0xfe, 0xff];
+  for (const type of types) {
+    const rom = new Uint8Array(0x8000);
+    rom[0x147] = type;
+    const info = c.loadRomBytes(rom);
+    assert.notEqual(info.cartridgeTypeName, 'UNKNOWN', `type 0x${type.toString(16)}`);
+  }
 });
 
 test('joypad reads report no buttons pressed by default', () => {

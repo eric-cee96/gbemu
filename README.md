@@ -28,3 +28,11 @@ On Windows PowerShell systems that block `npm.ps1`, use `npm.cmd test` or
 The table-driven tests in `tests/opcodes.test.js` execute `LR35902.js` in an
 isolated VM for every case and check registers, flags, memory, program-counter
 movement, stack behavior, and cycle counts.
+
+## Source layout
+
+- `LR35902.js` — CPU state and opcode decoder
+- `GBmemorymapper.js` — ROM loading and cartridge mappers
+- `GBhardware.js` — timers, graphics, audio, and controls
+- `GBprocessor.js` — interrupts and CPU/frame scheduling
+- `main.js` — browser UI and startup
