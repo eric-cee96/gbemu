@@ -1,4 +1,4 @@
-﻿
+
 var memory = new Uint8Array(0x10000);
 
 var reg = new Array(6);
@@ -138,7 +138,7 @@ function LDRAD(r1) {
     reg[PC]++;
     var n2 = readMem(reg[PC]);
     var fus = (n2 << 8) | n1;
-    setByteRegister(A, memory[fus]);
+    setByteRegister(A, readMem(fus));
     reg[PC]++;
     return 16;
 }

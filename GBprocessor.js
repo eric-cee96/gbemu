@@ -1,4 +1,4 @@
-﻿// CPU scheduling, interrupts, and frame execution.
+// CPU scheduling, interrupts, and frame execution.
 var emulationRunning = false;
 var animationFrameId = null;
 var clockSpeed = 1;
@@ -108,7 +108,7 @@ function runCpuFrame() {
     }
     for (var vblankLine = 144; vblankLine < 154; vblankLine++) {
         updateLcdStatus(vblankLine, 1);
-        if (vblankLine === 144) requestInterrupt(0);
+        if (vblankLine === 144 && (memory[0xFF40] & 0x80)) requestInterrupt(0);
         runCpuCycles(456);
     }
     memory[0xFF44] = 0;

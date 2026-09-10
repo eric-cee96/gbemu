@@ -1,4 +1,4 @@
-﻿// Game Boy timers, video, audio, and input hardware.
+// Game Boy timers, video, audio, and input hardware.
 var statusElement = null;
 var canvasContext = null;
 var frameImage = null;
@@ -108,6 +108,11 @@ function ensureAudio() {
     return true;
 }
 function updateLcdStatus(line, mode) {
+    if ((memory[0xFF40] & 0x80) === 0) {
+        memory[0xFF44] = 0;
+        memory[0xFF41] = (memory[0xFF41] & 0xF8) | (memory[0xFF45] === 0 ? 4 : 0);
+        return;
+    }
     memory[0xFF44] = line;
     var stat = memory[0xFF41] & 0xF8;
     if (mode === undefined) mode = line >= 144 ? 1 : 2;

@@ -36,3 +36,23 @@ movement, stack behavior, and cycle counts.
 - `GBhardware.js` — timers, graphics, audio, and controls
 - `GBprocessor.js` — interrupts and CPU/frame scheduling
 - `main.js` — browser UI and startup
+
+## Super Mario Land 2 compatibility
+
+Tested the USA/Europe Rev 2 ROM (MARIOLAND2, 512 KiB, MBC1+RAM+BATTERY)
+through the title screen, file selection, and the opening level using a
+1,200-frame headless session with Start, Right, and A input. This is a smoke
+test, not a full playthrough or audio validation. Battery saves are not persisted.
+
+The compatibility fixes route LD A,(a16) through the memory bus and suppress
+LCD/VBlank interrupts while the LCD is disabled.
+
+Run the reproducible smoke test with your own ROM (no ROM is included):
+
+```text
+node tools/smoke-rom.js "path/to/game.gb" "path/to/captures"
+```
+
+The optional capture directory receives BMP screenshots. The script checks
+for rendered, changing graphics and reports execution errors; its button
+sequence is intended for Super Mario Land 2.

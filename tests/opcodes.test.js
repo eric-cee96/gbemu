@@ -462,3 +462,45 @@ test('DIV and TIMA retain cycle remainders and request timer interrupts', () => 
   assert.equal(c.memory[0xff05], 0x42);
   assert.equal(c.memory[0xff0f] & 0x04, 0x04);
 });
+
+test('LD A,(a16) reads switched ROM, cartridge RAM, and joypad through the bus', () => {
+  const c = cpu();
+  c.document = { readyState: 'loading', addEventListener() {}, getElementById() { return null; } };
+  vm.runInContext(mainSource, c);
+  const rom = new Uint8Array(0x10000);
+  rom[0x147] = 3;
+  rom[0x149] = 2;
+  rom[0x4000] = 0x11;
+  rom[0xc000] = 0x33;
+  c.loadRomBytes(rom);
+  c.writeMem(0x2000, 3);
+  c.writeMem(0, 0x0a);
+  c.writeMem(0xa000, 0x57);
+  c.writeMem(0xff00, 0x10);
+  c.setJoypadButton('a', true);
+  for (const [address, expected] of [[0x4000, 0x33], [0xa000, 0x57], [0xff00, 0xde]]) {
+    c.reg[c.PC] = 0xc000;
+    assert.equal(execute(c, [0xfa, address & 255, address >> 8]), 16);
+    assert.equal(c.getByteRegister(c.A), expected);
+    assert.equal(c.reg[c.PC], 0xc003);
+  }
+});
+
+test('LCD off holds LY at zero and suppresses LCD and VBlank interrupts', () => {
+  const c = cpu();
+  c.document = { readyState: 'loading', addEventListener() {}, getElementById() { return null; } };
+  vm.runInContext(mainSource, c);
+  const rom = new Uint8Array(0x8000);
+  rom[0x100] = 0x76;
+  c.loadRomBytes(rom);
+  c.memory[0xff40] = 0;
+  c.memory[0xff41] = 0x78;
+  c.memory[0xff0f] = 0;
+  c.runCpuFrame();
+  assert.equal(c.memory[0xff44], 0);
+  assert.equal(c.memory[0xff41] & 3, 0);
+  assert.equal(c.memory[0xff0f] & 3, 0);
+  c.memory[0xff40] = 0x80;
+  c.runCpuFrame();
+  assert.equal(c.memory[0xff0f] & 3, 3);
+});
