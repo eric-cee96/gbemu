@@ -1,6 +1,7 @@
 {
   "name": "gbemu-opcode-tests",
   "private": true,
+  "license": "PolyForm-Noncommercial-1.0.0",
   "scripts": {
     "test": "node tests/opcodes.test.js"
   }

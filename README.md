@@ -56,3 +56,11 @@ node tools/smoke-rom.js "path/to/game.gb" "path/to/captures"
 The optional capture directory receives BMP screenshots. The script checks
 for rendered, changing graphics and reports execution errors; its button
 sequence is intended for Super Mario Land 2.
+
+## License
+
+Required Notice: Copyright (c) 2026 Eric Cee
+
+The project code is source-available under the [PolyForm Noncommercial License 1.0.0](LICENSE). Copyright remains with its respective authors. Use, modification, and redistribution are permitted for the purposes defined in the license. Commercial use is not licensed; it requires separate permission from the copyright holder. Retain the required copyright notice and license terms when sharing the code.
+
+This is a noncommercial source-available license, not an OSI-approved open-source license. ROMs, game assets, and third-party dependencies remain subject to their own licenses.
